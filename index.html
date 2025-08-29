@@ -40,21 +40,36 @@ button.send:hover { background:#005bb5; }
 // Initialize EmailJS
 emailjs.init("pG6ucVR7zX2qahxvm");
 
-// Subscribers list
-const subscribers = [
-  { name: "BVP Studios", email: "bvpstudios012@gmail.com" },
-  { name: "ChefBoy", email: "chefboy-12@hotmail.com" }
-];
-
 // EmailJS service and template IDs
 const serviceId = "service_h8c2z0w";
 const templateId = "template_009nh11";
+
+// Subscribers array
+let subscribers = [];
+
+// Fetch subscribers from GitHub JSON
+async function loadSubscribers() {
+  try {
+    const response = await fetch("https://raw.githubusercontent.com/Dev-BVP/email/main/subscribers.json");
+    if (!response.ok) throw new Error("Failed to fetch subscribers");
+    subscribers = await response.json();
+    console.log("Subscribers loaded:", subscribers);
+  } catch (err) {
+    console.error("Error loading subscribers:", err);
+    const statusDiv = document.getElementById("status");
+    statusDiv.style.color = "red";
+    statusDiv.innerText = "⚠️ Failed to load subscribers from GitHub JSON.";
+  }
+}
+
+// Call on page load
+loadSubscribers();
 
 // Live preview
 const editor = document.getElementById("editor");
 const preview = document.getElementById("preview_content");
 editor.addEventListener("input", () => {
-  preview.innerHTML = editor.innerHTML; // shows content from editor
+  preview.innerHTML = editor.innerHTML; // show content from editor
 });
 
 // Send emails individually
@@ -68,6 +83,12 @@ function sendEmails() {
     return;
   }
 
+  if (!subscribers.length){
+    statusDiv.style.color="red";
+    statusDiv.innerText="⚠️ No subscribers loaded.";
+    return;
+  }
+
   statusDiv.style.color="black";
   statusDiv.innerText="⏳ Sending emails...";
 
@@ -75,9 +96,9 @@ function sendEmails() {
 
   subscribers.forEach(sub => {
     const templateParams = {
-      to_email: sub.email,    // dynamic recipient
-      name: sub.name,         // subscriber name
-      update_message: content // content only
+      to_email: sub.email,
+      name: sub.name,
+      update_message: content
     };
 
     emailjs.send(serviceId, templateId, templateParams)
