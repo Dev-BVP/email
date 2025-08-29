@@ -3,118 +3,75 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Send Verified Email</title>
+<title>Send Update Email</title>
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
-  .form-container {
-    background: #fff;
-    padding: 40px 30px;
-    border-radius: 15px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    width: 100%;
-    max-width: 450px;
-    text-align: center;
-  }
-  .form-container h1 {
-    margin-bottom: 25px;
-    font-size: 26px;
-    color: #333;
-  }
-  input, textarea, select {
-    width: 100%;
-    padding: 12px 15px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    font-size: 14px;
-    transition: all 0.3s ease;
-  }
-  input:focus, textarea:focus, select:focus {
-    border-color: #0078d7;
-    outline: none;
-    box-shadow: 0 0 5px rgba(0,120,215,0.3);
-  }
-  textarea { resize: vertical; }
-  button {
-    width: 100%;
-    padding: 15px;
-    background: linear-gradient(135deg, #0078d7, #00c6ff);
-    border: none;
-    border-radius: 10px;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  button:hover {
-    background: linear-gradient(135deg, #005a9e, #0091c3);
-    transform: translateY(-2px);
-  }
-  .message-box {
-    margin-top: 15px;
-    font-size: 14px;
-    color: #333;
-    min-height: 20px;
-  }
-  .message-box.success { color: #28a745; }
-  .message-box.error { color: #dc3545; }
+  body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+  .container { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 700px; width: 100%; }
+  h2 { text-align: center; color: #0078d7; }
+  textarea { width: 100%; height: 200px; padding: 10px; font-size: 16px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ccc; resize: vertical; }
+  button { display: block; width: 100%; padding: 15px; font-size: 18px; background: #0078d7; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
+  button:hover { background: #005fa3; }
+  .status { margin-top: 20px; }
+  .status p { margin: 5px 0; }
+  .success { color: #28a745; }
+  .error { color: #dc3545; }
 </style>
 </head>
 <body>
 
-<div class="form-container">
-  <h1>Send an Email</h1>
-  <form id="emailForm">
-    <input type="email" id="fromEmail" placeholder="Your Email" required>
-    <input type="text" id="subject" placeholder="Subject" required>
-    <textarea id="message" placeholder="Type your message..." rows="6" required></textarea>
-    <select id="serviceSelect" required>
-      <option value="service_h8c2z0w">Gmail / Outlook</option>
-    </select>
-    <button type="submit">Send Email</button>
-  </form>
-  <div class="message-box" id="statusMessage"></div>
+<div class="container">
+  <h2>Send Update Email to All Subscribers</h2>
+  <textarea id="updateText" placeholder="Type or paste your update here..."></textarea>
+  <button onclick="sendUpdate()">Send Update</button>
+  <div class="status" id="status"></div>
 </div>
 
 <script>
   // Initialize EmailJS
-  emailjs.init("pG6ucVR7zX2qahxvm"); // public key
+  emailjs.init("pG6ucVR7zX2qahxvm"); // Your public key
 
-  const form = document.getElementById('emailForm');
-  const statusMessage = document.getElementById('statusMessage');
+  // List of subscribers
+  const subscribers = [
+    { name: "John Doe", email: "john@example.com" },
+    { name: "Jane Smith", email: "jane@example.com" }
+    // Add more subscribers here
+  ];
 
-  form.addEventListener('submit', function(e) {
-    e.preventDefault();
+  const serviceId = "service_h8c2z0w"; // Gmail service
+  const templateId = "template_009nh11"; // Your EmailJS template
 
-    const templateParams = {
-      from_email: document.getElementById('fromEmail').value,
-      subject: document.getElementById('subject').value,
-      message: document.getElementById('message').value
-    };
+  const statusDiv = document.getElementById("status");
 
-    const serviceId = document.getElementById('serviceSelect').value;
+  function sendUpdate() {
+    const updateText = document.getElementById("updateText").value.trim();
+    if (!updateText) {
+      alert("Please enter your update text.");
+      return;
+    }
 
-    emailjs.send(serviceId, 'template_009nh11', templateParams)
-      .then(function(response) {
-        statusMessage.textContent = "✅ Email sent successfully!";
-        statusMessage.className = "message-box success";
-        form.reset();
-      }, function(error) {
-        statusMessage.textContent = "❌ Failed to send email. Check console for details.";
-        statusMessage.className = "message-box error";
-        console.error(error);
-      });
-  });
+    statusDiv.innerHTML = "<p>Sending emails...</p>";
+
+    subscribers.forEach(subscriber => {
+      const templateParams = {
+        name: subscriber.name,
+        update_message: updateText
+      };
+
+      emailjs.send(serviceId, templateId, templateParams)
+        .then(response => {
+          const p = document.createElement("p");
+          p.className = "success";
+          p.textContent = `✅ Email sent to ${subscriber.name} (${subscriber.email})`;
+          statusDiv.appendChild(p);
+        }, error => {
+          const p = document.createElement("p");
+          p.className = "error";
+          p.textContent = `❌ Failed to send to ${subscriber.name} (${subscriber.email})`;
+          statusDiv.appendChild(p);
+        });
+    });
+  }
 </script>
 
 </body>
