@@ -1,114 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Send Update Email</title>
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f9;
-      padding: 40px;
-    }
-    .container {
-      max-width: 600px;
-      background: #fff;
-      margin: auto;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-    h2 {
-      text-align: center;
-      color: #0073e6;
-    }
-    textarea {
-      width: 100%;
-      height: 150px;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      resize: none;
-      font-size: 14px;
-    }
-    button {
-      margin-top: 20px;
-      background: #0073e6;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-      width: 100%;
-    }
-    button:hover {
-      background: #005bb5;
-    }
-    .status {
-      margin-top: 15px;
-      text-align: center;
-      font-size: 14px;
-      color: green;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>HTML Email with Placeholders</title>
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<style>
+body { font-family: Arial; background:#f4f4f9; padding:40px;}
+.container { max-width:800px; margin:auto; background:#fff; padding:25px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.1);}
+h2 {text-align:center;color:#0073e6;}
+.toolbar {border:1px solid #ccc;padding:6px;background:#fafafa;border-radius:6px 6px 0 0;}
+.toolbar button {background:none;border:none;cursor:pointer;margin:0 5px;font-size:16px;}
+#editor {border:1px solid #ccc;border-top:none;padding:10px;min-height:180px;outline:none;font-size:15px;}
+button.send {margin-top:20px;background:#0073e6;color:white;border:none;padding:12px 20px;border-radius:6px;cursor:pointer;font-size:16px;width:100%;}
+button.send:hover {background:#005bb5;}
+.status {margin-top:15px;text-align:center;font-size:14px;}
+.preview-box {margin-top:25px;padding:20px;border-radius:8px;border:1px solid #ddd;background:#fafafa;}
+.preview-header {font-weight:bold;margin-bottom:10px;text-align:center;color:#444;}
+</style>
 </head>
 <body>
-  <div class="container">
-    <h2>📢 Send Update Email</h2>
-    <p>Write your update below and send it to all subscribers.</p>
-    <textarea id="update_message" placeholder="Type your update here..."></textarea>
-    <button onclick="sendUpdateToAll()">Send Update</button>
-    <div class="status" id="status"></div>
-  </div>
+<div class="container">
+<h2>📢 Send HTML Email with Placeholders</h2>
+<p>Type your update. You can use placeholders like <b>{{player}}</b> or <b>{{date}}</b>.</p>
 
-  <script>
-    // Initialize EmailJS
-    emailjs.init("pG6ucVR7zX2qahxvm"); // Your Public Key
+<div class="toolbar">
+<button onclick="document.execCommand('bold', false, '');"><b>B</b></button>
+<button onclick="document.execCommand('italic', false, '');"><i>I</i></button>
+<button onclick="document.execCommand('underline', false, '');"><u>U</u></button>
+<button onclick="document.execCommand('insertUnorderedList', false, '');">• List</button>
+<button onclick="document.execCommand('createLink', false, prompt('Enter link:','http://'));">🔗</button>
+</div>
 
-    // Subscriber list
-    const subscribers = [
-      { name: "BVP Studios", email: "bvpstudios012@gmail.com" },
-      { name: "ChefBoy", email: "chefboy-12@hotmail.com" }
-    ];
+<div id="editor" contenteditable="true">
+<h2 style="color:#0073e6; text-align:center;">⚡ AuthsRNG – Update v1.2!</h2>
+<p>Hello {{player}},</p>
+<p>We have a new update on {{date}}:</p>
+<ul>
+<li>✨ New Rare Items</li>
+<li>⚔️ Balance Changes</li>
+<li>🎨 UI Improvements</li>
+</ul>
+<p style="text-align:center;"><a href="https://your-game-link.example" style="color:#0073e6;font-weight:bold;">Play Now</a></p>
+</div>
 
-    const serviceId = "service_h8c2z0w";   // Your Service ID
-    const templateId = "template_009nh11"; // Your Template ID
+<div class="preview-box">
+<div class="preview-header">📩 Email Preview</div>
+<div id="preview_content"></div>
+</div>
 
-    function sendUpdateToAll() {
-      const message = document.getElementById("update_message").value;
-      const statusDiv = document.getElementById("status");
+<button class="send" onclick="sendUpdateToAll()">Send Update</button>
+<div class="status" id="status"></div>
+</div>
 
-      if (!message.trim()) {
+<script>
+// EmailJS init
+emailjs.init("pG6ucVR7zX2qahxvm");
+
+const subscribers = [
+  { name: "BVP Studios", email: "bvpstudios012@gmail.com" },
+  { name: "ChefBoy", email: "chefboy-12@hotmail.com" }
+];
+
+const serviceId = "service_h8c2z0w";
+const templateId = "template_009nh11";
+
+// Live preview
+const editor = document.getElementById("editor");
+const preview = document.getElementById("preview_content");
+
+function replacePlaceholders(html, name) {
+  return html.replaceAll("{{player}}", name)
+             .replaceAll("{{date}}", new Date().toLocaleDateString());
+}
+
+function updatePreview() {
+  preview.innerHTML = replacePlaceholders(editor.innerHTML, "Subscriber");
+}
+editor.addEventListener("input", updatePreview);
+updatePreview();
+
+// Send email
+function sendUpdateToAll() {
+  const rawHTML = editor.innerHTML;
+  const statusDiv = document.getElementById("status");
+
+  if (!rawHTML.trim()) {
+    statusDiv.style.color = "red";
+    statusDiv.innerText = "⚠️ Please type an update before sending.";
+    return;
+  }
+
+  statusDiv.style.color = "black";
+  statusDiv.innerText = "⏳ Sending emails...";
+
+  let success = 0, fail = 0;
+
+  subscribers.forEach(sub => {
+    const templateParams = {
+      name: sub.name,
+      to_email: sub.email,
+      update_message: replacePlaceholders(rawHTML, sub.name)
+    };
+
+    emailjs.send(serviceId, templateId, templateParams)
+      .then(() => {
+        success++;
+        statusDiv.style.color = "green";
+        statusDiv.innerText = `✅ Sent: ${success}, ❌ Failed: ${fail}`;
+      })
+      .catch(() => {
+        fail++;
         statusDiv.style.color = "red";
-        statusDiv.innerText = "⚠️ Please type an update before sending.";
-        return;
-      }
-
-      statusDiv.style.color = "black";
-      statusDiv.innerText = "⏳ Sending emails...";
-
-      let successCount = 0;
-      let failCount = 0;
-
-      subscribers.forEach(sub => {
-        const templateParams = {
-          name: sub.name,
-          to_email: sub.email,
-          update_message: message
-        };
-
-        emailjs.send(serviceId, templateId, templateParams)
-          .then(() => {
-            successCount++;
-            statusDiv.innerText = `✅ Sent: ${successCount}, ❌ Failed: ${failCount}`;
-          })
-          .catch(() => {
-            failCount++;
-            statusDiv.innerText = `✅ Sent: ${successCount}, ❌ Failed: ${failCount}`;
-          });
+        statusDiv.innerText = `✅ Sent: ${success}, ❌ Failed: ${fail}`;
       });
-    }
-  </script>
+  });
+}
+</script>
 </body>
 </html>
