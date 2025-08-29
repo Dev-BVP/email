@@ -1,78 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Send Update Email</title>
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-<style>
-  body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-  .container { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 700px; width: 100%; }
-  h2 { text-align: center; color: #0078d7; }
-  textarea { width: 100%; height: 200px; padding: 10px; font-size: 16px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ccc; resize: vertical; }
-  button { display: block; width: 100%; padding: 15px; font-size: 18px; background: #0078d7; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
-  button:hover { background: #005fa3; }
-  .status { margin-top: 20px; }
-  .status p { margin: 5px 0; }
-  .success { color: #28a745; }
-  .error { color: #dc3545; }
-</style>
+  <meta charset="UTF-8">
+  <title>Send Update Email</title>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f9;
+      padding: 40px;
+    }
+    .container {
+      max-width: 600px;
+      background: #fff;
+      margin: auto;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #0073e6;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      resize: none;
+      font-size: 14px;
+    }
+    button {
+      margin-top: 20px;
+      background: #0073e6;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+    }
+    button:hover {
+      background: #005bb5;
+    }
+    .status {
+      margin-top: 15px;
+      text-align: center;
+      font-size: 14px;
+      color: green;
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h2>📢 Send Update Email</h2>
+    <p>Write your update below and send it to all subscribers.</p>
+    <textarea id="update_message" placeholder="Type your update here..."></textarea>
+    <button onclick="sendUpdateToAll()">Send Update</button>
+    <div class="status" id="status"></div>
+  </div>
 
-<div class="container">
-  <h2>Send Update Email to All Subscribers</h2>
-  <textarea id="updateText" placeholder="Type or paste your update here..."></textarea>
-  <button onclick="sendUpdate()">Send Update</button>
-  <div class="status" id="status"></div>
-</div>
+  <script>
+    // Initialize EmailJS
+    emailjs.init("pG6ucVR7zX2qahxvm"); // Your Public Key
 
-<script>
-  // Initialize EmailJS
-  emailjs.init("pG6ucVR7zX2qahxvm"); // Your public key
+    // Subscriber list
+    const subscribers = [
+      { name: "BVP Studios", email: "bvpstudios012@gmail.com" },
+      { name: "ChefBoy", email: "chefboy-12@hotmail.com" }
+    ];
 
-  // List of subscribers
-  const subscribers = [
-    { name: "John Doe", email: "chefboy-12@hotmail.com" },
-    { name: "Jane Smith", email: "bvpstudios012@gmail.com" }
-    // Add more subscribers here
-  ];
+    const serviceId = "service_h8c2z0w";   // Your Service ID
+    const templateId = "template_009nh11"; // Your Template ID
 
-  const serviceId = "service_h8c2z0w"; // Gmail service
-  const templateId = "template_009nh11"; // Your EmailJS template
+    function sendUpdateToAll() {
+      const message = document.getElementById("update_message").value;
+      const statusDiv = document.getElementById("status");
 
-  const statusDiv = document.getElementById("status");
+      if (!message.trim()) {
+        statusDiv.style.color = "red";
+        statusDiv.innerText = "⚠️ Please type an update before sending.";
+        return;
+      }
 
-  function sendUpdate() {
-    const updateText = document.getElementById("updateText").value.trim();
-    if (!updateText) {
-      alert("Please enter your update text.");
-      return;
+      statusDiv.style.color = "black";
+      statusDiv.innerText = "⏳ Sending emails...";
+
+      let successCount = 0;
+      let failCount = 0;
+
+      subscribers.forEach(sub => {
+        const templateParams = {
+          name: sub.name,
+          email: sub.email,
+          update_message: message
+        };
+
+        emailjs.send(serviceId, templateId, templateParams)
+          .then(() => {
+            successCount++;
+            statusDiv.innerText = `✅ Sent: ${successCount}, ❌ Failed: ${failCount}`;
+          })
+          .catch(() => {
+            failCount++;
+            statusDiv.innerText = `✅ Sent: ${successCount}, ❌ Failed: ${failCount}`;
+          });
+      });
     }
-
-    statusDiv.innerHTML = "<p>Sending emails...</p>";
-
-    subscribers.forEach(subscriber => {
-      const templateParams = {
-        name: subscriber.name,
-        update_message: updateText
-      };
-
-      emailjs.send(serviceId, templateId, templateParams)
-        .then(response => {
-          const p = document.createElement("p");
-          p.className = "success";
-          p.textContent = `✅ Email sent to ${subscriber.name} (${subscriber.email})`;
-          statusDiv.appendChild(p);
-        }, error => {
-          const p = document.createElement("p");
-          p.className = "error";
-          p.textContent = `❌ Failed to send to ${subscriber.name} (${subscriber.email})`;
-          statusDiv.appendChild(p);
-        });
-    });
-  }
-</script>
-
+  </script>
 </body>
 </html>
