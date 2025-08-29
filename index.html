@@ -2,39 +2,35 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>HTML Email Preview & Send</title>
+<title>AuthsRNG Email Sender</title>
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 <style>
-body{font-family:Arial;background:#f4f4f9;padding:40px;}
-.container{max-width:800px;margin:auto;background:#fff;padding:25px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.1);}
-h2{text-align:center;color:#0073e6;}
-#editor{border:1px solid #ccc;padding:10px;min-height:180px;outline:none;font-size:15px;}
-button.send{margin-top:20px;background:#0073e6;color:white;border:none;padding:12px 20px;border-radius:6px;cursor:pointer;font-size:16px;width:100%;}
-button.send:hover{background:#005bb5;}
-.status{margin-top:15px;text-align:center;font-size:14px;}
-.preview-box{margin-top:25px;padding:20px;border-radius:8px;border:1px solid #ddd;background:#fafafa;}
-.preview-header{font-weight:bold;margin-bottom:10px;text-align:center;color:#444;}
+body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 40px; }
+.container { max-width: 800px; margin: auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+h2 { text-align: center; color: #0073e6; }
+#editor { border:1px solid #ccc; padding:10px; min-height:200px; outline:none; font-size:15px; }
+button.send { margin-top:20px; background:#0073e6; color:white; border:none; padding:12px 20px; border-radius:6px; cursor:pointer; font-size:16px; width:100%; }
+button.send:hover { background:#005bb5; }
+.status { margin-top:15px; text-align:center; font-size:14px; }
+.preview-box { margin-top:25px; padding:20px; border-radius:8px; border:1px solid #ddd; background:#fafafa; }
+.preview-header { font-weight:bold; margin-bottom:10px; text-align:center; color:#444; }
 </style>
 </head>
 <body>
 <div class="container">
-<h2>📢 Send HTML Email with Live Preview</h2>
-<p>Paste any HTML code below. The preview renders it live, including safe tags like <b>&lt;iframe&gt;</b>.</p>
+<h2>📢 AuthsRNG Plain Text Email Sender</h2>
+<p>Type your message below. Placeholders like <b>{{name}}</b> and <b>{{date}}</b> will be applied automatically.</p>
 
-<!-- Editor -->
-<div id="editor" contenteditable="true">
-<p>Example content:</p>
-<p><b>Hello Players!</b></p>
-<p>Click <a href="https://authsrng.neocities.org">here</a> to play AuthsRNG!</p>
-</div>
+<!-- Plain text editor -->
+<div id="editor" contenteditable="true" placeholder="Type your message here..."></div>
 
-<!-- Live Preview -->
+<!-- Live preview -->
 <div class="preview-box">
-<div class="preview-header">📩 Email Preview</div>
+<div class="preview-header">📩 Live Preview</div>
 <div id="preview_content"></div>
 </div>
 
-<button class="send" onclick="sendUpdateToAll()">Send Update</button>
+<button class="send" onclick="sendEmails()">Send Email</button>
 <div class="status" id="status"></div>
 </div>
 
@@ -42,6 +38,7 @@ button.send:hover{background:#005bb5;}
 // Initialize EmailJS
 emailjs.init("pG6ucVR7zX2qahxvm");
 
+// Subscribers
 const subscribers = [
   { name: "BVP Studios", email: "bvpstudios012@gmail.com" },
   { name: "ChefBoy", email: "chefboy-12@hotmail.com" }
@@ -50,30 +47,51 @@ const subscribers = [
 const serviceId = "service_h8c2z0w";
 const templateId = "template_009nh11";
 
-// Render preview live
+// Live preview
 const editor = document.getElementById("editor");
 const preview = document.getElementById("preview_content");
-function updatePreview(){ preview.innerHTML = editor.innerHTML; }
+function updatePreview() {
+    let text = editor.innerText || editor.textContent;
+    text = text.replace(/{{name}}/g, "Subscriber Name")
+               .replace(/{{date}}/g, new Date().toLocaleDateString());
+    preview.textContent = text;
+}
 editor.addEventListener("input", updatePreview);
 updatePreview();
 
-// Send emails
-function sendUpdateToAll(){
-  const rawHTML = editor.innerHTML;
-  const statusDiv = document.getElementById("status");
-  if(!rawHTML.trim()){ statusDiv.style.color="red"; statusDiv.innerText="⚠️ Type HTML before sending."; return; }
-  statusDiv.style.color="black"; statusDiv.innerText="⏳ Sending emails...";
-  let success=0, fail=0;
-  subscribers.forEach(sub=>{
-    const templateParams={
-      name: sub.name,
-      to_email: sub.email,
-      update_message: rawHTML // HTML content
-    };
-    emailjs.send(serviceId, templateId, templateParams)
-      .then(()=>{ success++; statusDiv.style.color="green"; statusDiv.innerText=`✅ Sent: ${success}, ❌ Failed: ${fail}`; })
-      .catch(()=>{ fail++; statusDiv.style.color="red"; statusDiv.innerText=`✅ Sent: ${success}, ❌ Failed: ${fail}`; });
-  });
+// Send function
+function sendEmails() {
+    const message = editor.innerText || editor.textContent;
+    const statusDiv = document.getElementById("status");
+    if(!message.trim()){
+        statusDiv.style.color = "red";
+        statusDiv.innerText = "⚠️ Type a message first.";
+        return;
+    }
+
+    statusDiv.style.color = "black";
+    statusDiv.innerText = "⏳ Sending emails...";
+
+    let success = 0, fail = 0;
+
+    subscribers.forEach(sub => {
+        const templateParams = {
+            to_email: sub.email,
+            name: sub.name,
+            update_message: message // this is plain text, template will style it
+        };
+        emailjs.send(serviceId, templateId, templateParams)
+            .then(() => {
+                success++;
+                statusDiv.style.color = "green";
+                statusDiv.innerText = `✅ Sent: ${success}, ❌ Failed: ${fail}`;
+            })
+            .catch(() => {
+                fail++;
+                statusDiv.style.color = "red";
+                statusDiv.innerText = `✅ Sent: ${success}, ❌ Failed: ${fail}`;
+            });
+    });
 }
 </script>
 </body>
