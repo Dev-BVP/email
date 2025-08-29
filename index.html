@@ -22,13 +22,16 @@ button.send:hover { background:#005bb5; }
 <h2>📢 AuthsRNG Email Sender</h2>
 <p>Type your text and paste images/videos directly into the editor below.</p>
 
+<!-- Content editor -->
 <div id="editor" contenteditable="true" placeholder="Type your message here..."></div>
 
+<!-- Live preview -->
 <div class="preview-box">
 <div class="preview-header">📩 Live Preview</div>
 <div id="preview_content"></div>
 </div>
 
+<!-- Send button -->
 <button class="send" onclick="sendEmails()">Send Email</button>
 <div class="status" id="status"></div>
 </div>
@@ -37,7 +40,7 @@ button.send:hover { background:#005bb5; }
 // Initialize EmailJS
 emailjs.init("pG6ucVR7zX2qahxvm");
 
-// List of subscribers
+// Subscribers list
 const subscribers = [
   { name: "BVP Studios", email: "bvpstudios012@gmail.com" },
   { name: "ChefBoy", email: "chefboy-12@hotmail.com" }
@@ -47,14 +50,14 @@ const subscribers = [
 const serviceId = "service_h8c2z0w";
 const templateId = "template_009nh11";
 
-// Live preview function (optional)
+// Live preview
 const editor = document.getElementById("editor");
 const preview = document.getElementById("preview_content");
 editor.addEventListener("input", () => {
-  preview.innerHTML = editor.innerHTML; // shows text/images/videos only
+  preview.innerHTML = editor.innerHTML; // shows content from editor
 });
 
-// Send emails to all subscribers
+// Send emails individually
 function sendEmails() {
   const content = editor.innerHTML.trim();
   const statusDiv = document.getElementById("status");
@@ -72,9 +75,9 @@ function sendEmails() {
 
   subscribers.forEach(sub => {
     const templateParams = {
-      to_email: sub.email,
-      name: sub.name,
-      update_message: content // only content from editor
+      to_email: sub.email,    // dynamic recipient
+      name: sub.name,         // subscriber name
+      update_message: content // content only
     };
 
     emailjs.send(serviceId, templateId, templateParams)
